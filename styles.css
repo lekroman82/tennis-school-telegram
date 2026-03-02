@@ -870,6 +870,116 @@ input, textarea {
 
 
 /* ==============================================
+   ЭКРАН 0: ОНБОРДИНГ
+   ============================================== */
+
+.onboarding {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 40px var(--padding-screen) var(--padding-screen);
+  text-align: center;
+}
+
+.onboarding__emoji {
+  font-size: 64px;
+  line-height: 1;
+  margin-bottom: 20px;
+}
+
+.onboarding__title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.onboarding__subtitle {
+  font-size: 16px;
+  color: var(--hint);
+  margin-bottom: 24px;
+}
+
+.onboarding__features {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  text-align: left;
+  width: 100%;
+  max-width: 320px;
+  margin-bottom: 32px;
+}
+
+.onboarding__feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.onboarding__feature-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+  width: 28px;
+  text-align: center;
+}
+
+.onboarding__btn {
+  width: 100%;
+  max-width: 320px;
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  background: var(--button, #2AABEE);
+  color: var(--button-text, #fff);
+  font-size: 17px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 150ms ease, opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.onboarding__btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+
+/* ==============================================
+   КНОПКА «ПОДЕЛИТЬСЯ»
+   ============================================== */
+
+.btn-share {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  padding: 0 24px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: var(--radius-chip);
+  transition: all 150ms ease;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+  margin-bottom: 8px;
+}
+
+.btn-share:active {
+  background: rgba(42, 171, 238, 0.1);
+  transform: scale(0.97);
+}
+
+
+/* ==============================================
    УТИЛИТЫ
    ============================================== */
 
