@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <!-- Запрет масштабирования — Mini App должен вести себя как нативное приложение -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Школа тенниса</title>
+
+  <!-- Telegram Web App SDK -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <!-- Стили приложения -->
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- ============================================= -->
+  <!-- КОНТЕЙНЕР ПРИЛОЖЕНИЯ                          -->
+  <!-- Все экраны живут внутри #app.                 -->
+  <!-- Активный экран имеет класс .screen--active    -->
+  <!-- ============================================= -->
+  <div id="app">
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН 1: КАТАЛОГ УСЛУГ (главный)            -->
+    <!-- =========================================== -->
+    <div id="screen-catalog" class="screen screen--active">
+
+      <!-- Шапка с названием школы -->
+      <header class="catalog-header">
+        <div class="catalog-header__icon">🎾</div>
+        <h1 class="catalog-header__title">Первая Школа Тенниса</h1>
+      </header>
+
+      <!-- Чипы-фильтры по категориям -->
+      <div class="chips" id="category-chips">
+        <button class="chip chip--active" data-category="all">Все</button>
+        <button class="chip" data-category="individual">Индивидуальные</button>
+        <button class="chip" data-category="group">Групповые</button>
+        <button class="chip" data-category="rent">Аренда</button>
+      </div>
+
+      <!-- Список карточек услуг (заполняется из app.js) -->
+      <div class="service-list" id="service-list">
+        <!-- Скелетоны показываются при загрузке -->
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН 2: ДЕТАЛИ УСЛУГИ                      -->
+    <!-- =========================================== -->
+    <div id="screen-detail" class="screen">
+
+      <div class="detail" id="detail-content">
+        <!-- Большое фото услуги -->
+        <div class="detail__image" id="detail-image"></div>
+
+        <!-- Информация об услуге -->
+        <div class="detail__body">
+          <h2 class="detail__title" id="detail-title"></h2>
+          <span class="detail__duration" id="detail-duration"></span>
+          <p class="detail__description" id="detail-description"></p>
+
+          <div class="divider"></div>
+
+          <!-- Блок тренера -->
+          <div class="coach-block" id="detail-coach">
+            <div class="coach-block__avatar" id="coach-avatar"></div>
+            <div class="coach-block__info">
+              <div class="coach-block__name" id="coach-name"></div>
+              <div class="coach-block__meta" id="coach-meta"></div>
+            </div>
+          </div>
+
+          <div class="divider"></div>
+
+          <!-- Доступность -->
+          <div class="detail__availability">
+            <div class="detail__spots" id="detail-spots"></div>
+            <div class="detail__next-slot" id="detail-next-slot"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН 3: ВЫБОР ДАТЫ И ВРЕМЕНИ               -->
+    <!-- =========================================== -->
+    <div id="screen-datetime" class="screen">
+
+      <div class="datetime">
+        <h2 class="section-title">Выберите дату</h2>
+
+        <!-- Календарь -->
+        <div class="calendar">
+          <div class="calendar__header">
+            <button class="calendar__arrow" id="cal-prev" aria-label="Предыдущий месяц">&#8249;</button>
+            <span class="calendar__month" id="cal-month"></span>
+            <button class="calendar__arrow" id="cal-next" aria-label="Следующий месяц">&#8250;</button>
+          </div>
+          <div class="calendar__weekdays">
+            <span>Пн</span><span>Вт</span><span>Ср</span>
+            <span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span>
+          </div>
+          <div class="calendar__days" id="cal-days">
+            <!-- Дни генерируются в app.js -->
+          </div>
+        </div>
+
+        <!-- Временные слоты -->
+        <div id="time-section" class="time-section time-section--hidden">
+          <h2 class="section-title">Доступное время</h2>
+          <div class="time-slots" id="time-slots">
+            <!-- Чипы времени генерируются в app.js -->
+          </div>
+        </div>
+
+        <!-- Пустое состояние -->
+        <div id="no-slots" class="empty-state empty-state--hidden">
+          <div class="empty-state__icon">📅</div>
+          <div class="empty-state__text">Нет свободных слотов на эту дату</div>
+          <div class="empty-state__hint">Выберите другой день</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН 4: ПОДТВЕРЖДЕНИЕ ЗАПИСИ               -->
+    <!-- =========================================== -->
+    <div id="screen-confirm" class="screen">
+
+      <div class="confirm">
+        <h2 class="section-title">Проверьте запись</h2>
+
+        <!-- Карточка-резюме -->
+        <div class="summary-card" id="summary-card">
+          <div class="summary-card__title" id="summary-title"></div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">📅</span>
+            <span id="summary-date"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">🕐</span>
+            <span id="summary-time"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">👤</span>
+            <span id="summary-coach"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">💰</span>
+            <span id="summary-price"></span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Данные пользователя -->
+        <h2 class="section-title">Ваши данные</h2>
+
+        <div class="form-group">
+          <label class="form-label">Имя</label>
+          <div class="form-value" id="confirm-name"></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Телефон</label>
+          <input
+            type="tel"
+            class="form-input"
+            id="confirm-phone"
+            placeholder="+7 (___) ___-__-__"
+            inputmode="tel"
+          >
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Комментарий <span class="form-label--optional">(необязательно)</span></label>
+          <textarea
+            class="form-textarea"
+            id="confirm-comment"
+            placeholder="Например: новичок, левша, ребёнку 8 лет"
+            maxlength="200"
+            rows="2"
+          ></textarea>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН 5: УСПЕХ                              -->
+    <!-- =========================================== -->
+    <div id="screen-success" class="screen">
+
+      <div class="success">
+        <!-- Анимированная галочка -->
+        <div class="success__checkmark">
+          <svg class="checkmark-svg" viewBox="0 0 80 80">
+            <circle class="checkmark-circle" cx="40" cy="40" r="36" fill="none" stroke-width="3"/>
+            <path class="checkmark-check" d="M24 42 L34 52 L56 30" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+
+        <h2 class="success__title">Вы записаны!</h2>
+
+        <!-- Карточка с деталями -->
+        <div class="summary-card" id="success-card">
+          <div class="summary-card__title" id="success-title"></div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">📅</span>
+            <span id="success-date"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">🕐</span>
+            <span id="success-time"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">👤</span>
+            <span id="success-coach"></span>
+          </div>
+          <div class="summary-card__row">
+            <span class="summary-card__icon">📍</span>
+            <span>ул. Чернышевского, 94 к3, Саратов</span>
+          </div>
+        </div>
+
+        <div class="success__booking-number" id="success-number"></div>
+        <div class="success__hint">Мы отправили подтверждение в чат бота</div>
+
+        <button class="btn-text" id="btn-back-catalog">Вернуться в каталог</button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- Логика приложения -->
+  <script src="app.js"></script>
+
+</body>
+</html>
