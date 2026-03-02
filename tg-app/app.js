@@ -1037,6 +1037,7 @@ function haptic(type, style) {
 /* ---------------------------------------------- */
 
 const OFFER_STORAGE_KEY = 'tennis_offer_shown';
+const BOT_DEEPLINK = 'https://t.me/Pervaya_school_tennis_Bot?start=from_app';
 
 /**
  * Показать оффер, если ещё не показывался
@@ -1052,9 +1053,14 @@ function showOfferIfNeeded() {
     overlay.classList.add('offer-overlay--visible');
   });
 
-  // Кнопка CTA — запоминаем и закрываем
+  // Кнопка CTA — открываем бота через Telegram SDK и закрываем
   document.getElementById('offer-btn-cta').addEventListener('click', () => {
     dismissOffer();
+    if (tg?.openTelegramLink) {
+      tg.openTelegramLink(BOT_DEEPLINK);
+    } else {
+      window.open(BOT_DEEPLINK, '_blank');
+    }
   });
 
   // «Пропустить» — запоминаем и закрываем
