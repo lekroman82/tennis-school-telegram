@@ -290,7 +290,7 @@ function updateTelegramButtons() {
   const screen = state.currentScreen;
 
   // --- BackButton ---
-  if (screen === 'catalog' || screen === 'success') {
+  if (screen === 'catalog' || screen === 'success' || screen === 'onboarding') {
     tg.BackButton.hide();
   } else {
     tg.BackButton.show();
@@ -298,6 +298,7 @@ function updateTelegramButtons() {
 
   // --- MainButton ---
   switch (screen) {
+    case 'onboarding':
     case 'catalog':
       tg.MainButton.hide();
       break;
@@ -895,6 +896,11 @@ function initEventHandlers() {
     haptic('impact', 'light');
   });
 
+  // --- Кнопка "Поделиться с другом" ---
+  document.getElementById('btn-share').addEventListener('click', () => {
+    shareBot();
+  });
+
   // --- Маска телефона ---
   const phoneInput = document.getElementById('confirm-phone');
   phoneInput.addEventListener('input', () => {
@@ -1036,8 +1042,64 @@ function haptic(type, style) {
 /* 9. МОДАЛКА-ОФФЕР (показывается один раз)       */
 /* ---------------------------------------------- */
 
+const ONBOARDING_STORAGE_KEY = 'tennis_onboarding_shown';
 const OFFER_STORAGE_KEY = 'tennis_offer_shown';
 const BOT_DEEPLINK = 'https://t.me/Pervaya_school_tennis_Bot?start=from_app';
+const BOT_SHARE_URL = 'https://t.me/Pervaya_school_tennis_Bot';
+
+/**
+ * Показать онбординг, если ещё не показывался
+ */
+function showOnboardingIfNeeded() {
+  if (localStorage.getItem(ONBOARDING_STORAGE_KEY)) return false;
+
+  // Обращение по имени из Telegram
+  const firstName = tgUser.first_name || '';
+  const title = firstName
+    ? `${firstName}, добро пожаловать!`
+    : 'Добро пожаловать!';
+  document.getElementById('onboarding-title').textContent = title;
+
+  // Показываем экран онбординга вместо каталога
+  document.getElementById('screen-catalog').classList.remove('screen--active');
+  const onboarding = document.getElementById('screen-onboarding');
+  onboarding.classList.add('screen--active');
+
+  state.currentScreen = 'onboarding';
+  state.screenHistory = ['onboarding'];
+
+  // Кнопка «Начать»
+  document.getElementById('onboarding-btn').addEventListener('click', () => {
+    localStorage.setItem(ONBOARDING_STORAGE_KEY, '1');
+
+    // Переход на каталог
+    navigateTo('catalog');
+
+    // Сбрасываем историю — каталог теперь корневой экран
+    state.screenHistory = ['catalog'];
+
+    haptic('impact', 'medium');
+
+    // Показываем оффер после онбординга
+    setTimeout(() => showOfferIfNeeded(), 400);
+  });
+
+  updateTelegramButtons();
+  return true;
+}
+
+/**
+ * Поделиться ботом с другом
+ */
+function shareBot() {
+  const text = 'Записывайся на теннис! Удобно прямо в Telegram:';
+  if (tg?.openTelegramLink) {
+    tg.openTelegramLink(`https://t.me/share/url?url=${encodeURIComponent(BOT_SHARE_URL)}&text=${encodeURIComponent(text)}`);
+  } else {
+    window.open(`https://t.me/share/url?url=${encodeURIComponent(BOT_SHARE_URL)}&text=${encodeURIComponent(text)}`, '_blank');
+  }
+  haptic('impact', 'light');
+}
 
 /**
  * Показать оффер, если ещё не показывался
@@ -1113,8 +1175,11 @@ function init() {
 
     updateTelegramButtons();
 
-    // Показываем оффер при первом открытии
-    showOfferIfNeeded();
+    // Онбординг → если не показан, после него покажется оффер
+    // Если онбординг уже был — показываем только оффер
+    if (!showOnboardingIfNeeded()) {
+      showOfferIfNeeded();
+    }
   }, 400);
 }
 

@@ -22,6 +22,34 @@
   <div id="app">
 
     <!-- =========================================== -->
+    <!-- ЭКРАН 0: ОНБОРДИНГ (показывается один раз) -->
+    <!-- =========================================== -->
+    <div id="screen-onboarding" class="screen">
+
+      <div class="onboarding">
+        <div class="onboarding__emoji">🎾</div>
+        <h1 class="onboarding__title" id="onboarding-title">Добро пожаловать!</h1>
+        <p class="onboarding__subtitle">Здесь вы можете:</p>
+        <div class="onboarding__features">
+          <div class="onboarding__feature">
+            <span class="onboarding__feature-icon">📋</span>
+            <span>Записаться на тренировку в пару нажатий</span>
+          </div>
+          <div class="onboarding__feature">
+            <span class="onboarding__feature-icon">📅</span>
+            <span>Выбрать удобную дату и время</span>
+          </div>
+          <div class="onboarding__feature">
+            <span class="onboarding__feature-icon">🏟️</span>
+            <span>Арендовать корт для самостоятельной игры</span>
+          </div>
+        </div>
+        <button class="onboarding__btn" id="onboarding-btn">Начать</button>
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
     <!-- ЭКРАН 1: КАТАЛОГ УСЛУГ (главный)            -->
     <!-- =========================================== -->
     <div id="screen-catalog" class="screen screen--active">
@@ -231,6 +259,7 @@
         <div class="success__booking-number" id="success-number"></div>
         <div class="success__hint">Мы отправили подтверждение в чат бота</div>
 
+        <button class="btn-share" id="btn-share">Поделиться с другом</button>
         <button class="btn-text" id="btn-back-catalog">Вернуться в каталог</button>
       </div>
 
