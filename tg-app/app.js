@@ -1033,7 +1033,60 @@ function haptic(type, style) {
 }
 
 /* ---------------------------------------------- */
-/* 9. ЗАПУСК ПРИЛОЖЕНИЯ                           */
+/* 9. МОДАЛКА-ОФФЕР (показывается один раз)       */
+/* ---------------------------------------------- */
+
+const OFFER_STORAGE_KEY = 'tennis_offer_shown';
+
+/**
+ * Показать оффер, если ещё не показывался
+ */
+function showOfferIfNeeded() {
+  if (localStorage.getItem(OFFER_STORAGE_KEY)) return;
+
+  const overlay = document.getElementById('offer-overlay');
+  overlay.classList.remove('offer-overlay--hidden');
+
+  // Запускаем анимацию появления на следующем кадре
+  requestAnimationFrame(() => {
+    overlay.classList.add('offer-overlay--visible');
+  });
+
+  // Кнопка CTA — запоминаем и закрываем
+  document.getElementById('offer-btn-cta').addEventListener('click', () => {
+    dismissOffer();
+  });
+
+  // «Пропустить» — запоминаем и закрываем
+  document.getElementById('offer-btn-skip').addEventListener('click', () => {
+    dismissOffer();
+  });
+
+  // Тап по фону — закрыть
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) dismissOffer();
+  });
+}
+
+/**
+ * Закрыть оффер и запомнить в localStorage
+ */
+function dismissOffer() {
+  localStorage.setItem(OFFER_STORAGE_KEY, '1');
+
+  const overlay = document.getElementById('offer-overlay');
+  overlay.classList.remove('offer-overlay--visible');
+
+  // После завершения анимации — скрыть полностью
+  setTimeout(() => {
+    overlay.classList.add('offer-overlay--hidden');
+  }, 350);
+
+  haptic('impact', 'light');
+}
+
+/* ---------------------------------------------- */
+/* 10. ЗАПУСК ПРИЛОЖЕНИЯ                          */
 /* ---------------------------------------------- */
 
 function init() {
@@ -1053,6 +1106,9 @@ function init() {
     }
 
     updateTelegramButtons();
+
+    // Показываем оффер при первом открытии
+    showOfferIfNeeded();
   }, 400);
 }
 
