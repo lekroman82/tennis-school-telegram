@@ -852,6 +852,13 @@ function sendDataToBot() {
  */
 function initEventHandlers() {
 
+  // --- Кнопки «Назад» (data-back) ---
+  document.querySelectorAll('[data-back]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      navigateBack();
+    });
+  });
+
   // --- Чипы категорий ---
   document.getElementById('category-chips').addEventListener('click', (e) => {
     const chip = e.target.closest('.chip');

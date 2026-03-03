@@ -845,6 +845,34 @@ input, textarea {
   margin-bottom: 24px;
 }
 
+/* --- Кнопка «Назад» --- */
+.back-btn {
+  position: absolute;
+  top: 12px;
+  left: 8px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--bg);
+  color: var(--accent);
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: transform 150ms ease, background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.back-btn:active {
+  transform: scale(0.9);
+  background: var(--bg-secondary);
+}
+
 /* --- Текстовая кнопка --- */
 .btn-text {
   display: inline-flex;
