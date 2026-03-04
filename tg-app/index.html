@@ -73,6 +73,32 @@
         <!-- Скелетоны показываются при загрузке -->
       </div>
 
+      <!-- Плавающий футер -->
+      <div class="catalog-footer">
+        <button class="catalog-footer-btn" onclick="navigateTo('bookings'); renderBookingsScreen();">
+          <span class="catalog-footer-btn__icon">📋</span>
+          <span>Мои записи</span>
+        </button>
+        <button class="catalog-footer-btn" onclick="shareBot()">
+          <span class="catalog-footer-btn__icon">📤</span>
+          <span>Поделиться</span>
+        </button>
+      </div>
+
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН: МОИ ЗАПИСИ                           -->
+    <!-- =========================================== -->
+    <div id="screen-bookings" class="screen">
+
+      <div class="bookings">
+        <h2 class="section-title bookings__title">Мои записи</h2>
+
+        <!-- Список записей (заполняется из app.js) -->
+        <div id="bookings-list"></div>
+      </div>
+
     </div>
 
     <!-- =========================================== -->

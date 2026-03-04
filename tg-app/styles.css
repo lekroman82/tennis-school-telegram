@@ -178,7 +178,59 @@ input, textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 var(--padding-screen) 24px;
+  padding: 0 var(--padding-screen) 80px; /* отступ под плавающий футер */
+}
+
+/* --- Плавающий футер каталога --- */
+.catalog-footer {
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 10px var(--padding-screen) calc(10px + var(--safe-bottom));
+  background: var(--bg);
+  border-top: 1px solid var(--section-sep);
+  z-index: 10;
+}
+
+/* Поддержка blur для устройств, где работает */
+@supports (backdrop-filter: blur(20px)) {
+  .catalog-footer {
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+  }
+}
+
+.catalog-footer-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 44px;
+  border: none;
+  border-radius: var(--radius-card);
+  background: var(--bg-secondary);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 150ms ease, background 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.catalog-footer-btn:active {
+  transform: scale(0.96);
+  background: var(--section-sep);
+}
+
+.catalog-footer-btn__icon {
+  font-size: 16px;
+  line-height: 1;
 }
 
 /* --- Карточка услуги --- */
@@ -314,6 +366,132 @@ input, textarea {
 @keyframes skeleton-pulse {
   0%, 100% { opacity: 0.4; }
   50% { opacity: 1; }
+}
+
+
+/* ==============================================
+   ЭКРАН: МОИ ЗАПИСИ
+   ============================================== */
+
+.bookings {
+  padding: var(--padding-screen);
+}
+
+.bookings__title {
+  font-size: 20px;
+  margin-bottom: 16px;
+}
+
+/* Карточка записи */
+.booking-card {
+  background: var(--section-bg);
+  border-radius: var(--radius-card);
+  padding: 14px 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  margin-bottom: 10px;
+}
+
+.booking-card--past {
+  opacity: 0.5;
+}
+
+.booking-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.booking-card__service {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.booking-card__number {
+  font-size: 12px;
+  color: var(--hint);
+}
+
+.booking-card__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 3px 0;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.booking-card__icon {
+  font-size: 14px;
+  width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.booking-card__badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.booking-card__badge--upcoming {
+  background: rgba(42, 171, 238, 0.15);
+  color: var(--accent);
+}
+
+.booking-card__badge--past {
+  background: var(--bg-secondary);
+  color: var(--hint);
+}
+
+/* Пустое состояние записей */
+.bookings-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 48px 16px;
+  text-align: center;
+}
+
+.bookings-empty__icon {
+  font-size: 48px;
+  opacity: 0.5;
+}
+
+.bookings-empty__text {
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.bookings-empty__hint {
+  font-size: 14px;
+  color: var(--hint);
+  margin-bottom: 16px;
+}
+
+.bookings-empty__btn {
+  height: 44px;
+  padding: 0 28px;
+  border: none;
+  border-radius: var(--radius-chip);
+  background: var(--button);
+  color: var(--button-text);
+  font-size: 15px;
+  font-weight: 500;
+  font-family: inherit;
+  cursor: pointer;
+  transition: transform 150ms ease, opacity 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bookings-empty__btn:active {
+  transform: scale(0.97);
+  opacity: 0.9;
 }
 
 
