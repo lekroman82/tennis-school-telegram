@@ -11,3 +11,10 @@ node_modules/
 # IDE
 .vscode/
 .idea/
+
+# Claude Code
+.claude/
+
+# Python
+__pycache__/
+*.pyc
