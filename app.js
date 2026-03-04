@@ -300,6 +300,7 @@ function updateTelegramButtons() {
   switch (screen) {
     case 'onboarding':
     case 'catalog':
+    case 'bookings':
       tg.MainButton.hide();
       break;
 
@@ -841,6 +842,97 @@ function sendDataToBot() {
 
   // Для демо — выводим в консоль
   console.log('Данные записи:', data);
+
+  // Сохраняем запись в localStorage
+  saveBookingToStorage(data);
+}
+
+/* --- Экран: Мои записи --- */
+
+const BOOKINGS_STORAGE_KEY = 'tennis_bookings';
+
+/**
+ * Сохранить запись в localStorage
+ */
+function saveBookingToStorage(data) {
+  const bookings = JSON.parse(localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]');
+  bookings.push({
+    bookingNumber: data.bookingNumber,
+    service: data.service,
+    date: data.date,
+    time: data.time,
+    duration: data.duration,
+    coach: data.coach,
+    price: data.price,
+    createdAt: new Date().toISOString()
+  });
+  localStorage.setItem(BOOKINGS_STORAGE_KEY, JSON.stringify(bookings));
+}
+
+/**
+ * Отрисовка экрана «Мои записи»
+ */
+function renderBookingsScreen() {
+  const container = document.getElementById('bookings-list');
+  const bookings = JSON.parse(localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]');
+
+  if (bookings.length === 0) {
+    container.innerHTML = `
+      <div class="bookings-empty">
+        <div class="bookings-empty__icon">📋</div>
+        <div class="bookings-empty__text">У вас пока нет записей</div>
+        <div class="bookings-empty__hint">Выберите услугу и запишитесь</div>
+        <button class="bookings-empty__btn" onclick="navigateBack()">Перейти в каталог</button>
+      </div>
+    `;
+    return;
+  }
+
+  const now = new Date();
+  container.innerHTML = '';
+
+  // Показываем от новых к старым
+  [...bookings].reverse().forEach(b => {
+    const [y, m, d] = b.date.split('-').map(Number);
+    const [hh, mm] = b.time.split(':').map(Number);
+    const bookingDate = new Date(y, m - 1, d, hh, mm);
+    const isPast = bookingDate < now;
+
+    const card = document.createElement('div');
+    card.className = 'booking-card' + (isPast ? ' booking-card--past' : '');
+
+    const badgeClass = isPast ? 'booking-card__badge--past' : 'booking-card__badge--upcoming';
+    const badgeText = isPast ? 'Прошла' : 'Предстоит';
+
+    const dateObj = new Date(y, m - 1, d);
+    const dateText = formatDateFull(dateObj);
+    const timeText = formatTimeRange(b.time, b.duration);
+
+    card.innerHTML = `
+      <div class="booking-card__header">
+        <div class="booking-card__service">${b.service}</div>
+        <span class="booking-card__badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="booking-card__row">
+        <span class="booking-card__icon">📅</span>
+        <span>${dateText}</span>
+      </div>
+      <div class="booking-card__row">
+        <span class="booking-card__icon">🕐</span>
+        <span>${timeText}</span>
+      </div>
+      ${b.coach ? `<div class="booking-card__row">
+        <span class="booking-card__icon">👤</span>
+        <span>${b.coach}</span>
+      </div>` : ''}
+      <div class="booking-card__row">
+        <span class="booking-card__icon">🔢</span>
+        <span class="booking-card__number">Запись #${b.bookingNumber}</span>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
 }
 
 /* ---------------------------------------------- */
