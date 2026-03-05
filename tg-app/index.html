@@ -73,18 +73,6 @@
         <!-- Скелетоны показываются при загрузке -->
       </div>
 
-      <!-- Плавающий футер -->
-      <div class="catalog-footer">
-        <button class="catalog-footer-btn" onclick="navigateTo('bookings'); renderBookingsScreen();">
-          <span class="catalog-footer-btn__icon">📋</span>
-          <span>Мои записи</span>
-        </button>
-        <button class="catalog-footer-btn" onclick="shareBot()">
-          <span class="catalog-footer-btn__icon">📤</span>
-          <span>Поделиться</span>
-        </button>
-      </div>
-
     </div>
 
     <!-- =========================================== -->
@@ -99,6 +87,54 @@
         <div id="bookings-list"></div>
       </div>
 
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ЭКРАН: КОНТАКТЫ                             -->
+    <!-- =========================================== -->
+    <div id="screen-contacts" class="screen">
+      <div class="contacts">
+        <h2 class="contacts__title">Контакты</h2>
+
+        <div class="contacts-card">
+          <div class="contacts-card__row">
+            <span class="contacts-card__icon">📍</span>
+            <div>
+              <div class="contacts-card__label">Адрес</div>
+              <div class="contacts-card__value">ул. Чернышевского, 94 к3, Саратов</div>
+            </div>
+          </div>
+          <div class="contacts-card__row">
+            <span class="contacts-card__icon">🕐</span>
+            <div>
+              <div class="contacts-card__label">Время работы</div>
+              <div class="contacts-card__value">Пн–Сб: 9:00–20:00</div>
+            </div>
+          </div>
+          <div class="contacts-card__row">
+            <span class="contacts-card__icon">🌐</span>
+            <div>
+              <div class="contacts-card__label">Сайт</div>
+              <div class="contacts-card__value contacts-card__link" onclick="openLink('https://bolshoitennis.ru')">bolshoitennis.ru</div>
+            </div>
+          </div>
+        </div>
+
+        <h2 class="section-title">Тренер</h2>
+        <div class="contacts-card">
+          <div class="coach-block">
+            <div class="coach-block__avatar">👨‍🏫</div>
+            <div class="coach-block__info">
+              <div class="coach-block__name">Роман Лекомцев</div>
+              <div class="coach-block__meta">Автор методики · Опыт 15 лет</div>
+            </div>
+          </div>
+        </div>
+
+        <button class="contacts__share-btn" onclick="shareBot()">
+          📤 Поделиться с другом
+        </button>
+      </div>
     </div>
 
     <!-- =========================================== -->
@@ -293,6 +329,24 @@
         <button class="btn-text" id="btn-back-catalog">Вернуться в каталог</button>
       </div>
 
+    </div>
+
+    <!-- =========================================== -->
+    <!-- ГЛОБАЛЬНЫЙ ТАБ-БАР                         -->
+    <!-- =========================================== -->
+    <div id="tab-bar" class="tab-bar">
+      <button class="tab-bar__btn tab-bar__btn--active" data-tab="catalog">
+        <span class="tab-bar__icon">🎾</span>
+        <span class="tab-bar__label">Каталог</span>
+      </button>
+      <button class="tab-bar__btn" data-tab="bookings">
+        <span class="tab-bar__icon">📋</span>
+        <span class="tab-bar__label">Записи</span>
+      </button>
+      <button class="tab-bar__btn" data-tab="contacts">
+        <span class="tab-bar__icon">📍</span>
+        <span class="tab-bar__label">Контакты</span>
+      </button>
     </div>
 
   </div>

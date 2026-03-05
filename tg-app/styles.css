@@ -187,34 +187,43 @@ input, textarea {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  padding: 0 var(--padding-screen) 16px;
+  padding: 0 var(--padding-screen) 72px;
   flex: 1;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
-/* --- Плавающий футер каталога (табы) --- */
-.catalog-footer {
+/* --- Глобальный таб-бар --- */
+.tab-bar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  padding: 6px var(--padding-screen) calc(8px + var(--safe-bottom));
+  grid-template-columns: 1fr 1fr 1fr;
+  padding: 4px 0 calc(6px + var(--safe-bottom));
   background: var(--section-bg);
   border-top: 0.5px solid var(--section-sep);
-  flex-shrink: 0;
+  transition: transform 250ms ease;
 }
 
-.catalog-footer-btn {
+.tab-bar--hidden {
+  transform: translateY(100%);
+  pointer-events: none;
+}
+
+.tab-bar__btn {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   gap: 2px;
-  height: 48px;
+  height: 44px;
   border: none;
-  border-radius: 0;
   background: transparent;
   color: var(--hint);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
@@ -222,12 +231,16 @@ input, textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
-.catalog-footer-btn:active {
+.tab-bar__btn--active {
   color: var(--accent);
 }
 
-.catalog-footer-btn__icon {
+.tab-bar__icon {
   font-size: 22px;
+  line-height: 1;
+}
+
+.tab-bar__label {
   line-height: 1;
 }
 
@@ -385,6 +398,7 @@ input, textarea {
 
 .bookings {
   padding: var(--padding-screen);
+  padding-bottom: 72px;
 }
 
 .bookings__title {
@@ -502,6 +516,93 @@ input, textarea {
 .bookings-empty__btn:active {
   transform: scale(0.97);
   opacity: 0.9;
+}
+
+
+/* ==============================================
+   ЭКРАН: КОНТАКТЫ
+   ============================================== */
+
+.contacts {
+  padding: var(--padding-screen);
+  padding-bottom: 72px;
+}
+
+.contacts__title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  margin-bottom: 16px;
+}
+
+.contacts-card {
+  background: var(--section-bg);
+  border-radius: 16px;
+  padding: 4px 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
+  margin-bottom: 20px;
+}
+
+.contacts-card__row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 0.5px solid var(--section-sep);
+}
+
+.contacts-card__row:last-child {
+  border-bottom: none;
+}
+
+.contacts-card__icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.contacts-card__label {
+  font-size: 12px;
+  color: var(--hint);
+  margin-bottom: 2px;
+}
+
+.contacts-card__value {
+  font-size: 15px;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.contacts-card__link {
+  color: var(--accent);
+  cursor: pointer;
+}
+
+.contacts__share-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  height: 48px;
+  border: 1.5px solid var(--accent);
+  border-radius: 14px;
+  background: transparent;
+  color: var(--accent);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 150ms ease;
+  -webkit-tap-highlight-color: transparent;
+  margin-top: 8px;
+}
+
+.contacts__share-btn:active {
+  background: rgba(42, 171, 238, 0.1);
+  transform: scale(0.97);
 }
 
 

@@ -150,6 +150,9 @@ function generateSlots() {
 // Все слоты на 14 дней
 const SCHEDULE = generateSlots();
 
+// Таб-экраны (нижнее меню)
+const TAB_SCREENS = ['catalog', 'bookings', 'contacts'];
+
 /* ---------------------------------------------- */
 /* 3. СОСТОЯНИЕ ПРИЛОЖЕНИЯ                        */
 /* ---------------------------------------------- */
@@ -207,6 +210,14 @@ function navigateTo(screenId) {
   // Скролл нового экрана вверх
   nextEl.scrollTop = 0;
 
+  // Управляем таб-баром
+  if (TAB_SCREENS.includes(screenId)) {
+    showTabBar();
+    updateTabBar(screenId);
+  } else {
+    hideTabBar();
+  }
+
   // Обновляем кнопки Telegram
   updateTelegramButtons();
 
@@ -249,6 +260,13 @@ function navigateBack() {
   }, 300);
 
   state.currentScreen = prevScreen;
+
+  // Управляем таб-баром
+  if (TAB_SCREENS.includes(prevScreen)) {
+    showTabBar();
+    updateTabBar(prevScreen);
+  }
+
   updateTelegramButtons();
   haptic('impact', 'light');
 }
@@ -274,7 +292,62 @@ function navigateToHome() {
   state.selectedDate = null;
   state.selectedTime = null;
 
+  showTabBar();
+  updateTabBar('catalog');
   updateTelegramButtons();
+}
+
+/* ---------------------------------------------- */
+/* 4.1 ПЕРЕКЛЮЧЕНИЕ ТАБОВ (нижнее меню)           */
+/* ---------------------------------------------- */
+
+/**
+ * Переключение между табами
+ */
+function switchTab(tabName) {
+  if (!TAB_SCREENS.includes(tabName)) return;
+  if (state.currentScreen === tabName) return;
+
+  // Скрываем все экраны без анимации
+  document.querySelectorAll('.screen').forEach(el => {
+    el.classList.remove('screen--active', 'screen--exit-left');
+    el.style.transform = '';
+    el.style.opacity = '';
+  });
+
+  // Показываем целевой таб
+  const targetEl = document.getElementById(`screen-${tabName}`);
+  targetEl.classList.add('screen--active');
+
+  // Обновляем состояние
+  state.currentScreen = tabName;
+  state.screenHistory = [tabName];
+  state.selectedDate = null;
+  state.selectedTime = null;
+
+  // Обновляем таб-бар
+  updateTabBar(tabName);
+  showTabBar();
+
+  // Рендерим контент если нужно
+  if (tabName === 'bookings') renderBookingsScreen();
+
+  updateTelegramButtons();
+  haptic('selection');
+}
+
+function updateTabBar(activeTab) {
+  document.querySelectorAll('.tab-bar__btn').forEach(btn => {
+    btn.classList.toggle('tab-bar__btn--active', btn.dataset.tab === activeTab);
+  });
+}
+
+function showTabBar() {
+  document.getElementById('tab-bar').classList.remove('tab-bar--hidden');
+}
+
+function hideTabBar() {
+  document.getElementById('tab-bar').classList.add('tab-bar--hidden');
 }
 
 /* ---------------------------------------------- */
@@ -290,7 +363,7 @@ function updateTelegramButtons() {
   const screen = state.currentScreen;
 
   // --- BackButton ---
-  if (screen === 'catalog' || screen === 'success' || screen === 'onboarding') {
+  if (TAB_SCREENS.includes(screen) || screen === 'success' || screen === 'onboarding') {
     tg.BackButton.hide();
   } else {
     tg.BackButton.show();
@@ -301,6 +374,7 @@ function updateTelegramButtons() {
     case 'onboarding':
     case 'catalog':
     case 'bookings':
+    case 'contacts':
       tg.MainButton.hide();
       break;
 
@@ -884,7 +958,7 @@ function renderBookingsScreen() {
         <div class="bookings-empty__icon">📋</div>
         <div class="bookings-empty__text">У вас пока нет записей</div>
         <div class="bookings-empty__hint">Выберите услугу и запишитесь</div>
-        <button class="bookings-empty__btn" onclick="navigateBack()">Перейти в каталог</button>
+        <button class="bookings-empty__btn" onclick="switchTab('catalog')">Перейти в каталог</button>
       </div>
     `;
     return;
@@ -1000,6 +1074,13 @@ function initEventHandlers() {
   // --- Кнопка "Поделиться с другом" ---
   document.getElementById('btn-share').addEventListener('click', () => {
     shareBot();
+  });
+
+  // --- Таб-бар ---
+  document.getElementById('tab-bar').addEventListener('click', (e) => {
+    const btn = e.target.closest('.tab-bar__btn');
+    if (!btn) return;
+    switchTab(btn.dataset.tab);
   });
 
   // --- Маска телефона ---
@@ -1139,6 +1220,17 @@ function haptic(type, style) {
   }
 }
 
+/**
+ * Открыть внешнюю ссылку
+ */
+function openLink(url) {
+  if (tg?.openLink) {
+    tg.openLink(url);
+  } else {
+    window.open(url, '_blank');
+  }
+}
+
 /* ---------------------------------------------- */
 /* 9. МОДАЛКА-ОФФЕР (показывается один раз)       */
 /* ---------------------------------------------- */
@@ -1169,6 +1261,8 @@ function showOnboardingIfNeeded() {
   state.currentScreen = 'onboarding';
   state.screenHistory = ['onboarding'];
 
+  hideTabBar();
+
   // Кнопка «Начать»
   document.getElementById('onboarding-btn').addEventListener('click', () => {
     localStorage.setItem(ONBOARDING_STORAGE_KEY, '1');
@@ -1178,6 +1272,8 @@ function showOnboardingIfNeeded() {
 
     // Сбрасываем историю — каталог теперь корневой экран
     state.screenHistory = ['catalog'];
+    showTabBar();
+    updateTabBar('catalog');
 
     haptic('impact', 'medium');
 
