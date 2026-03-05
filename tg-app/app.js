@@ -33,7 +33,7 @@ const COACHES = [
     id: 'c1',
     name: 'Роман Лекомцев',
     title: 'Автор методики обучения',
-    experience: 15,
+    experience: 20,
     emoji: '👨‍🏫'
   }
 ];
@@ -122,7 +122,7 @@ function generateSlots() {
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
   // Возможные времена начала занятий
-  const possibleTimes = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00'];
+  const possibleTimes = ['10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
 
   for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
     const date = new Date(today);
@@ -583,7 +583,7 @@ function renderDetailScreen(service) {
     coachDivider.style.display = '';
     document.getElementById('coach-avatar').textContent = coach.emoji;
     document.getElementById('coach-name').textContent = coach.name;
-    document.getElementById('coach-meta').textContent = `${coach.title} · Опыт ${coach.experience} лет`;
+    document.getElementById('coach-meta').textContent = `${coach.title} · Опыт более ${coach.experience} лет`;
   } else {
     coachBlock.style.display = 'none';
     coachDivider.style.display = 'none';
