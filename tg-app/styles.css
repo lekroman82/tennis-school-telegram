@@ -120,19 +120,20 @@ input, textarea {
 .catalog-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 16px var(--padding-screen) 8px;
+  gap: 12px;
+  padding: 20px var(--padding-screen) 4px;
 }
 
 .catalog-header__icon {
-  font-size: 28px;
+  font-size: 32px;
   line-height: 1;
 }
 
 .catalog-header__title {
-  font-size: 20px;
-  font-weight: 700;
+  font-size: 24px;
+  font-weight: 800;
   color: var(--text);
+  letter-spacing: -0.3px;
 }
 
 /* --- Чипы-фильтры --- */
@@ -150,17 +151,16 @@ input, textarea {
 
 .chip {
   flex-shrink: 0;
-  height: 36px;
-  padding: 0 16px;
-  border: none;
+  height: 34px;
+  padding: 0 14px;
+  border: 1.5px solid var(--section-sep);
   border-radius: var(--radius-chip);
-  background: var(--bg-secondary);
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 500;
+  background: var(--section-bg);
+  color: var(--hint);
+  font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 150ms ease;
-  /* Визуальная отдача при тапе */
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -171,6 +171,7 @@ input, textarea {
 .chip--active {
   background: var(--accent);
   color: #fff;
+  border-color: var(--accent);
 }
 
 /* --- Каталог: flex-колонка чтобы футер всегда внизу --- */
@@ -192,75 +193,88 @@ input, textarea {
   -webkit-overflow-scrolling: touch;
 }
 
-/* --- Плавающий футер каталога --- */
+/* --- Плавающий футер каталога (табы) --- */
 .catalog-footer {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  padding: 10px var(--padding-screen) calc(10px + var(--safe-bottom));
-  background: var(--bg);
-  border-top: 1px solid var(--section-sep);
+  padding: 6px var(--padding-screen) calc(8px + var(--safe-bottom));
+  background: var(--section-bg);
+  border-top: 0.5px solid var(--section-sep);
   flex-shrink: 0;
 }
 
 .catalog-footer-btn {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  height: 44px;
+  gap: 2px;
+  height: 48px;
   border: none;
-  border-radius: var(--radius-card);
-  background: var(--bg-secondary);
-  color: var(--text);
-  font-size: 14px;
+  border-radius: 0;
+  background: transparent;
+  color: var(--hint);
+  font-size: 11px;
   font-weight: 500;
   font-family: inherit;
   cursor: pointer;
-  transition: transform 150ms ease, background 150ms ease;
+  transition: color 150ms ease;
   -webkit-tap-highlight-color: transparent;
 }
 
 .catalog-footer-btn:active {
-  transform: scale(0.96);
-  background: var(--section-sep);
+  color: var(--accent);
 }
 
 .catalog-footer-btn__icon {
-  font-size: 16px;
+  font-size: 22px;
   line-height: 1;
 }
 
 /* --- Карточка услуги --- */
 .service-card {
   display: flex;
-  gap: 12px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   background: var(--section-bg);
-  border-radius: var(--radius-card);
+  border-radius: 16px;
   cursor: pointer;
   transition: transform 150ms ease, box-shadow 150ms ease;
   -webkit-tap-highlight-color: transparent;
-  /* Тень для объёма */
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .service-card:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06);
 }
 
 /* Фото услуги на карточке */
 .service-card__image {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 36px;
+  font-size: 30px;
   overflow: hidden;
+}
+
+/* Цветные фоны по категориям */
+.service-card__image--individual {
+  background: linear-gradient(145deg, #d4f5d0, #a8e6a0);
+}
+.service-card__image--group {
+  background: linear-gradient(145deg, #d0e8ff, #a0cfff);
+}
+.service-card__image--rent {
+  background: linear-gradient(145deg, #ffe8cc, #ffd1a0);
+}
+.service-card__image--trial {
+  background: linear-gradient(145deg, #fff3cc, #ffe69a);
 }
 
 /* Информация на карточке */
@@ -274,12 +288,10 @@ input, textarea {
 }
 
 .service-card__title {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  line-height: 1.25;
 }
 
 .service-card__duration {
@@ -326,18 +338,18 @@ input, textarea {
 /* --- Скелетон-загрузка --- */
 .skeleton-card {
   display: flex;
-  gap: 12px;
-  padding: 12px;
+  gap: 14px;
+  padding: 14px;
   background: var(--section-bg);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .skeleton-image {
   flex-shrink: 0;
-  width: 80px;
-  height: 80px;
-  border-radius: 10px;
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
   background: var(--bg-secondary);
   animation: skeleton-pulse 1.5s ease-in-out infinite;
 }
@@ -383,9 +395,9 @@ input, textarea {
 /* Карточка записи */
 .booking-card {
   background: var(--section-bg);
-  border-radius: var(--radius-card);
+  border-radius: 16px;
   padding: 14px 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
   margin-bottom: 10px;
 }
 
@@ -499,14 +511,19 @@ input, textarea {
 
 .detail__image {
   width: 100%;
-  aspect-ratio: 16 / 9;
-  background: var(--bg-secondary);
+  aspect-ratio: 2 / 1;
+  background: linear-gradient(145deg, #d0e8ff, #a0cfff);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 64px;
+  font-size: 72px;
   overflow: hidden;
 }
+
+.detail__image--individual { background: linear-gradient(145deg, #d4f5d0, #a8e6a0); }
+.detail__image--group { background: linear-gradient(145deg, #d0e8ff, #a0cfff); }
+.detail__image--rent { background: linear-gradient(145deg, #ffe8cc, #ffd1a0); }
+.detail__image--trial { background: linear-gradient(145deg, #fff3cc, #ffe69a); }
 
 .detail__body {
   padding: 16px var(--padding-screen);
@@ -514,9 +531,10 @@ input, textarea {
 
 .detail__title {
   font-size: 22px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text);
   margin-bottom: 4px;
+  letter-spacing: -0.3px;
 }
 
 .detail__duration {
@@ -613,9 +631,9 @@ input, textarea {
 /* --- Календарь --- */
 .calendar {
   background: var(--section-bg);
-  border-radius: var(--radius-card);
-  padding: 12px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
   margin-bottom: 24px;
 }
 
@@ -846,9 +864,9 @@ input, textarea {
 /* --- Карточка-резюме --- */
 .summary-card {
   background: var(--section-bg);
-  border-radius: var(--radius-card);
+  border-radius: 16px;
   padding: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.03);
   margin-bottom: 8px;
 }
 
@@ -905,16 +923,21 @@ input, textarea {
 .form-textarea {
   width: 100%;
   padding: 12px 14px;
-  border: 2px solid var(--section-sep);
-  border-radius: var(--radius-input);
-  background: var(--section-bg);
+  border: 1.5px solid var(--section-sep);
+  border-radius: 12px;
+  background: var(--bg-secondary);
   color: var(--text);
   font-size: 16px;
   font-family: inherit;
   outline: none;
-  transition: border-color 200ms ease;
+  transition: border-color 200ms ease, background 200ms ease;
   -webkit-appearance: none;
   appearance: none;
+}
+
+.form-input:focus,
+.form-textarea:focus {
+  background: var(--section-bg);
 }
 
 .form-input:focus,

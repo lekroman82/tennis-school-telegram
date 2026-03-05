@@ -447,7 +447,7 @@ function renderCatalog() {
     }
 
     card.innerHTML = `
-      <div class="service-card__image">${service.emoji}</div>
+      <div class="service-card__image service-card__image--${service.category}">${service.emoji}</div>
       <div class="service-card__info">
         <div class="service-card__title">${service.title}</div>
         <div class="service-card__duration">${service.duration} мин</div>
@@ -479,8 +479,10 @@ function renderCatalog() {
 function renderDetailScreen(service) {
   const coach = COACHES.find(c => c.id === service.coachId);
 
-  // Фото услуги (эмодзи-заглушка)
-  document.getElementById('detail-image').textContent = service.emoji;
+  // Фото услуги (эмодзи-заглушка) с цветным фоном категории
+  const detailImage = document.getElementById('detail-image');
+  detailImage.textContent = service.emoji;
+  detailImage.className = 'detail__image detail__image--' + service.category;
 
   // Текст
   document.getElementById('detail-title').textContent = service.title;
