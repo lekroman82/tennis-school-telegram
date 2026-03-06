@@ -471,6 +471,18 @@ input, textarea {
   color: var(--hint);
 }
 
+.booking-card__cancel {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--destructive, #ff3b30);
+  color: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+}
+
 /* Пустое состояние записей */
 .bookings-empty {
   display: flex;

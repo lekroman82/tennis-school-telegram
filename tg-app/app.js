@@ -877,11 +877,23 @@ function saveBookingToStorage(data) {
 }
 
 /**
- * Отрисовка экрана «Мои записи»
+ * Отрисовка экрана «Мои записи» — загрузка с API
  */
-function renderBookingsScreen() {
+async function renderBookingsScreen() {
   const container = document.getElementById('bookings-list');
-  const bookings = JSON.parse(localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]');
+  container.innerHTML = '<div style="padding:24px;text-align:center;opacity:0.5">Загрузка записей...</div>';
+
+  let bookings = [];
+  try {
+    bookings = await api('/my/bookings');
+  } catch (e) {
+    // Fallback на localStorage если нет авторизации
+    const local = JSON.parse(localStorage.getItem(BOOKINGS_STORAGE_KEY) || '[]');
+    if (local.length > 0) {
+      renderBookingsFromLocal(container, local);
+      return;
+    }
+  }
 
   if (bookings.length === 0) {
     container.innerHTML = `
@@ -898,26 +910,39 @@ function renderBookingsScreen() {
   const now = new Date();
   container.innerHTML = '';
 
-  // Показываем от новых к старым
-  [...bookings].reverse().forEach(b => {
-    const [y, m, d] = b.date.split('-').map(Number);
-    const [hh, mm] = b.time.split(':').map(Number);
+  bookings.forEach(b => {
+    const slot = b.schedule_slots || {};
+    const service = b.services || {};
+    const slotDate = slot.date || '';
+    const startTime = (slot.start_time || '').slice(0, 5);
+    const duration = service.duration_minutes || 60;
+
+    if (!slotDate) return;
+
+    const [y, m, d] = slotDate.split('-').map(Number);
+    const [hh, mm] = startTime ? startTime.split(':').map(Number) : [0, 0];
     const bookingDate = new Date(y, m - 1, d, hh, mm);
     const isPast = bookingDate < now;
+    const isCancelled = b.status === 'cancelled';
 
     const card = document.createElement('div');
-    card.className = 'booking-card' + (isPast ? ' booking-card--past' : '');
+    card.className = 'booking-card' + (isPast || isCancelled ? ' booking-card--past' : '');
 
-    const badgeClass = isPast ? 'booking-card__badge--past' : 'booking-card__badge--upcoming';
-    const badgeText = isPast ? 'Прошла' : 'Предстоит';
+    const badgeClass = isCancelled ? 'booking-card__badge--past' : isPast ? 'booking-card__badge--past' : 'booking-card__badge--upcoming';
+    const badgeText = isCancelled ? 'Отменена' : isPast ? 'Прошла' : 'Предстоит';
 
     const dateObj = new Date(y, m - 1, d);
     const dateText = formatDateFull(dateObj);
-    const timeText = formatTimeRange(b.time, b.duration);
+    const timeText = startTime ? formatTimeRange(startTime, duration) : '';
+
+    // Кнопка отмены только для предстоящих подтверждённых записей
+    const cancelBtn = (!isPast && !isCancelled)
+      ? `<button class="booking-card__cancel" data-booking-id="${b.id}">Отменить запись</button>`
+      : '';
 
     card.innerHTML = `
       <div class="booking-card__header">
-        <div class="booking-card__service">${b.service}</div>
+        <div class="booking-card__service">${service.title || 'Услуга'}</div>
         <span class="booking-card__badge ${badgeClass}">${badgeText}</span>
       </div>
       <div class="booking-card__row">
@@ -928,16 +953,66 @@ function renderBookingsScreen() {
         <span class="booking-card__icon">🕐</span>
         <span>${timeText}</span>
       </div>
-      ${b.coach ? `<div class="booking-card__row">
+      ${master?.name ? `<div class="booking-card__row">
         <span class="booking-card__icon">👤</span>
-        <span>${b.coach}</span>
+        <span>${master.name}</span>
       </div>` : ''}
-      <div class="booking-card__row">
-        <span class="booking-card__icon">🔢</span>
-        <span class="booking-card__number">Запись #${b.bookingNumber}</span>
-      </div>
+      ${cancelBtn}
     `;
 
+    // Обработчик отмены
+    const cancelBtnEl = card.querySelector('.booking-card__cancel');
+    if (cancelBtnEl) {
+      cancelBtnEl.addEventListener('click', async () => {
+        if (tg) {
+          tg.showConfirm('Отменить запись?', async (confirmed) => {
+            if (confirmed) await cancelBooking(b.id);
+          });
+        } else {
+          if (confirm('Отменить запись?')) await cancelBooking(b.id);
+        }
+      });
+    }
+
+    container.appendChild(card);
+  });
+}
+
+async function cancelBooking(bookingId) {
+  try {
+    await api(`/my/bookings/${bookingId}/cancel`, { method: 'POST' });
+    haptic('notification', 'success');
+    renderBookingsScreen();
+  } catch (e) {
+    if (tg) {
+      tg.showAlert(e.message || 'Не удалось отменить');
+    } else {
+      alert(e.message || 'Не удалось отменить');
+    }
+  }
+}
+
+function renderBookingsFromLocal(container, bookings) {
+  const now = new Date();
+  container.innerHTML = '';
+  [...bookings].reverse().forEach(b => {
+    const [y, m, d] = b.date.split('-').map(Number);
+    const [hh, mm] = b.time.split(':').map(Number);
+    const bookingDate = new Date(y, m - 1, d, hh, mm);
+    const isPast = bookingDate < now;
+    const card = document.createElement('div');
+    card.className = 'booking-card' + (isPast ? ' booking-card--past' : '');
+    const badgeClass = isPast ? 'booking-card__badge--past' : 'booking-card__badge--upcoming';
+    const badgeText = isPast ? 'Прошла' : 'Предстоит';
+    const dateObj = new Date(y, m - 1, d);
+    card.innerHTML = `
+      <div class="booking-card__header">
+        <div class="booking-card__service">${b.service}</div>
+        <span class="booking-card__badge ${badgeClass}">${badgeText}</span>
+      </div>
+      <div class="booking-card__row"><span class="booking-card__icon">📅</span><span>${formatDateFull(dateObj)}</span></div>
+      <div class="booking-card__row"><span class="booking-card__icon">🕐</span><span>${formatTimeRange(b.time, b.duration)}</span></div>
+    `;
     container.appendChild(card);
   });
 }
