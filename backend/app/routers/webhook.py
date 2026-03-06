@@ -34,7 +34,7 @@ def telegram_api(bot_token: str, method: str, data: dict = None):
 def make_webapp_url(slug: str) -> str:
     """Формирует URL Mini App для конкретного мастера."""
     # Mini App открывается с параметром slug — по нему определяем чей каталог
-    return f"https://tennis-school-telegram.vercel.app?slug={slug}"
+    return f"https://tennis-school-telegram.vercel.app/?slug={slug}"
 
 
 @router.post("/webhook/{master_id}")

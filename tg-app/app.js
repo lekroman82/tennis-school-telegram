@@ -22,145 +22,55 @@ if (tg) {
 const tgUser = tg?.initDataUnsafe?.user || {};
 
 /* ---------------------------------------------- */
-/* 2. ДАННЫЕ ПРИЛОЖЕНИЯ                           */
-/* Реалистичные данные школы тенниса              */
-/* Для изменения — редактируй объекты ниже        */
+/* 2. ДАННЫЕ ПРИЛОЖЕНИЯ (загружаются с API)        */
 /* ---------------------------------------------- */
 
-// Тренеры
-const COACHES = [
-  {
-    id: 'c1',
-    name: 'Роман Лекомцев',
-    title: 'Автор методики обучения',
-    experience: 20,
-    emoji: '👨‍🏫'
-  }
-];
+// API-сервер и slug мастера (из URL-параметра ?slug=roman)
+const API_URL = 'https://tennis-slot.ru';
+const SLUG = new URLSearchParams(window.location.search).get('slug') || 'roman';
 
-// Услуги (каталог)
-// Данные с сайта bolshoitennis.ru — Первая Школа Тенниса, Саратов
-const SERVICES = [
-  {
-    id: 's1',
-    title: 'Индивидуальная тренировка',
-    description: 'Персональное занятие с тренером. Работа над техникой подхода к мячу, подачей и приёмом по авторской методике.',
-    duration: 60,
-    price: 2900,
-    category: 'individual',
-    emoji: '🎾',
-    coachId: 'c1',
-    maxParticipants: 1,
-    spotsLeft: 4
-  },
-  {
-    id: 's2',
-    title: 'Абонемент (8 занятий/мес)',
-    description: 'Групповые тренировки 2 раза в неделю в мини-группе до 4 детей. Ежемесячная аттестация по 21 показателю. Оборудование предоставляется.',
-    duration: 60,
-    price: 8000,
-    category: 'group',
-    emoji: '📋',
-    coachId: 'c1',
-    maxParticipants: 4,
-    spotsLeft: 2
-  },
-  {
-    id: 's3',
-    title: 'Групповое занятие (разовое)',
-    description: 'Разовая тренировка в мини-группе до 4 человек по авторской методике. Оборудование предоставляется.',
-    duration: 60,
-    price: 1200,
-    category: 'group',
-    emoji: '👥',
-    coachId: 'c1',
-    maxParticipants: 4,
-    spotsLeft: 3
-  },
-  {
-    id: 's4',
-    title: 'Аренда корта',
-    description: 'Аренда теннисного корта на 1 час. Для самостоятельных тренировок или игры с партнёром.',
-    duration: 60,
-    price: 1400,
-    category: 'rent',
-    emoji: '🏟️',
-    coachId: null,
-    maxParticipants: 4,
-    spotsLeft: 5
-  },
-  {
-    id: 's6',
-    title: 'Сплит-тренировка для двоих',
-    description: 'Тренировка в паре с другом или партнёром. В стоимость входит аренда корта, тренер и всё оборудование (ракетки и корзины с мячами).',
-    duration: 60,
-    price: 3300,
-    category: 'individual',
-    emoji: '🤝',
-    coachId: 'c1',
-    maxParticipants: 2,
-    spotsLeft: 5
-  },
-  {
-    id: 's5',
-    title: 'Пробная тренировка',
-    description: 'Бесплатное ознакомительное занятие. Познакомитесь с тренером и авторской методикой, оцените свой уровень.',
-    duration: 60,
-    price: 0,
-    category: 'trial',
-    emoji: '⭐',
-    coachId: 'c1',
-    maxParticipants: 1,
-    spotsLeft: 6
-  }
-];
+// Данные загружаются с API
+let master = null;       // профиль мастера
+let SERVICES = [];       // услуги
+let availableDates = []; // даты с доступными слотами (для выбранной услуги)
+let daySlots = [];       // слоты на выбранную дату
 
-// Генерация расписания на 14 дней вперёд
-function generateSlots() {
-  const slots = {};
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+// Запрос к API
+async function api(path, options = {}) {
+  const url = `${API_URL}/api/masters/${SLUG}${path}`;
+  const headers = { 'Content-Type': 'application/json', ...options.headers };
 
-  // Возможные времена начала занятий
-  const possibleTimes = ['10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'];
-
-  for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() + dayOffset);
-    const dateStr = formatDateKey(date);
-
-    // Для каждой услуги генерируем 3–6 случайных слотов
-    SERVICES.forEach(service => {
-      // Пропускаем часть дней, чтобы было реалистично
-      if (Math.random() < 0.2) return;
-
-      const shuffled = [...possibleTimes].sort(() => Math.random() - 0.5);
-      const count = 3 + Math.floor(Math.random() * 4); // 3-6 слотов
-      const daySlots = shuffled.slice(0, count).sort();
-
-      // Если сегодня — убираем прошедшие слоты
-      const filtered = daySlots.filter(time => {
-        if (dayOffset === 0) {
-          const [h, m] = time.split(':').map(Number);
-          const slotTime = new Date(today);
-          slotTime.setHours(h, m);
-          return slotTime > now;
-        }
-        return true;
-      });
-
-      if (filtered.length > 0) {
-        const key = `${service.id}_${dateStr}`;
-        slots[key] = filtered;
-      }
-    });
+  // Добавляем авторизацию если есть initData
+  if (tg?.initData) {
+    headers['X-Telegram-Init-Data'] = tg.initData;
   }
 
-  return slots;
+  const resp = await fetch(url, { ...options, headers });
+  if (!resp.ok) {
+    const err = await resp.json().catch(() => ({}));
+    throw new Error(err.detail || `HTTP ${resp.status}`);
+  }
+  return resp.json();
 }
 
-// Все слоты на 14 дней
-const SCHEDULE = generateSlots();
+// Загрузка профиля мастера и услуг
+async function loadMasterData() {
+  const [masterData, services] = await Promise.all([
+    api(''),
+    api('/services'),
+  ]);
+  master = masterData;
+  SERVICES = services.map(s => ({
+    id: s.id,
+    title: s.title,
+    description: s.description,
+    duration: s.duration_minutes,
+    price: s.price,
+    category: s.category,
+    emoji: s.emoji,
+    maxParticipants: s.max_participants,
+  }));
+}
 
 // Таб-экраны (нижнее меню)
 const TAB_SCREENS = ['catalog', 'bookings', 'contacts'];
@@ -176,6 +86,7 @@ const state = {
   selectedService: null,       // выбранная услуга (объект)
   selectedDate: null,          // выбранная дата (Date)
   selectedTime: null,          // выбранное время ('HH:MM')
+  selectedSlotId: null,        // ID слота из API
   calendarMonth: new Date().getMonth(),  // месяц в календаре
   calendarYear: new Date().getFullYear(), // год в календаре
   bookingNumber: 1000 + Math.floor(Math.random() * 9000) // номер записи
@@ -563,8 +474,6 @@ function renderCatalog() {
  * @param {Object} service — объект услуги
  */
 function renderDetailScreen(service) {
-  const coach = COACHES.find(c => c.id === service.coachId);
-
   // Фото услуги (эмодзи-заглушка) с цветным фоном категории
   const detailImage = document.getElementById('detail-image');
   detailImage.textContent = service.emoji;
@@ -575,35 +484,47 @@ function renderDetailScreen(service) {
   document.getElementById('detail-duration').textContent = `${service.duration} мин`;
   document.getElementById('detail-description').textContent = service.description;
 
-  // Тренер (скрываем блок если нет тренера — например, для аренды корта)
+  // Тренер (данные мастера)
   const coachBlock = document.getElementById('detail-coach');
-  const coachDivider = coachBlock.previousElementSibling; // divider перед блоком тренера
-  if (coach) {
+  const coachDivider = coachBlock.previousElementSibling;
+  if (master && master.name) {
     coachBlock.style.display = '';
     coachDivider.style.display = '';
-    document.getElementById('coach-avatar').textContent = coach.emoji;
-    document.getElementById('coach-name').textContent = coach.name;
-    document.getElementById('coach-meta').textContent = `${coach.title} · Опыт более ${coach.experience} лет`;
+    document.getElementById('coach-avatar').textContent = '👨‍🏫';
+    document.getElementById('coach-name').textContent = master.name;
+    const meta = [master.title, master.experience ? `Опыт более ${master.experience} лет` : ''].filter(Boolean).join(' · ');
+    document.getElementById('coach-meta').textContent = meta;
   } else {
     coachBlock.style.display = 'none';
     coachDivider.style.display = 'none';
   }
 
-  // Доступность
+  // Скрываем споты (теперь не хардкодятся)
   const spotsEl = document.getElementById('detail-spots');
-  spotsEl.textContent = `Осталось ${service.spotsLeft} ${pluralize(service.spotsLeft, 'место', 'места', 'мест')}`;
-  spotsEl.className = service.spotsLeft <= 3
-    ? 'detail__spots detail__spots--low'
-    : 'detail__spots';
+  spotsEl.textContent = '';
 
-  // Ближайший слот
-  const nextSlot = findNextSlot(service.id);
+  // Ближайший слот — загрузим с API
   const nextSlotEl = document.getElementById('detail-next-slot');
-  if (nextSlot) {
-    nextSlotEl.textContent = `Ближайшее: ${nextSlot}`;
-  } else {
-    nextSlotEl.textContent = 'Расписание формируется';
-  }
+  nextSlotEl.textContent = 'Загрузка расписания...';
+  api(`/slots/dates?service_id=${service.id}`)
+    .then(data => {
+      if (data.dates && data.dates.length > 0) {
+        const d = new Date(data.dates[0] + 'T00:00:00');
+        const today = new Date(); today.setHours(0,0,0,0);
+        const tomorrow = new Date(today); tomorrow.setDate(tomorrow.getDate() + 1);
+        const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+        if (d.getTime() === today.getTime()) {
+          nextSlotEl.textContent = 'Ближайшее: сегодня';
+        } else if (d.getTime() === tomorrow.getTime()) {
+          nextSlotEl.textContent = 'Ближайшее: завтра';
+        } else {
+          nextSlotEl.textContent = `Ближайшее: ${d.getDate()} ${months[d.getMonth()]}`;
+        }
+      } else {
+        nextSlotEl.textContent = 'Нет свободных дат';
+      }
+    })
+    .catch(() => { nextSlotEl.textContent = 'Расписание формируется'; });
 }
 
 /* --- Экран 3: Выбор даты и времени --- */
@@ -611,7 +532,7 @@ function renderDetailScreen(service) {
 /**
  * Отрисовка экрана выбора даты и времени
  */
-function renderDateTimeScreen() {
+async function renderDateTimeScreen() {
   // Сбросить выбор при каждом входе
   state.selectedDate = null;
   state.selectedTime = null;
@@ -620,6 +541,15 @@ function renderDateTimeScreen() {
   const now = new Date();
   state.calendarMonth = now.getMonth();
   state.calendarYear = now.getFullYear();
+
+  // Загружаем доступные даты с API
+  try {
+    const data = await api(`/slots/dates?service_id=${state.selectedService.id}`);
+    availableDates = data.dates || [];
+  } catch (e) {
+    availableDates = [];
+    console.error('Не удалось загрузить даты:', e);
+  }
 
   renderCalendar();
   hideTimeSlots();
@@ -682,8 +612,7 @@ function renderCalendar() {
     const isPast = cellDate < today;
     const isToday = cellDate.getTime() === today.getTime();
     const dateKey = formatDateKey(cellDate);
-    const hasSlots = state.selectedService
-      && SCHEDULE[`${state.selectedService.id}_${dateKey}`]?.length > 0;
+    const hasSlots = availableDates.includes(dateKey);
 
     if (isPast) {
       btn.classList.add('cal-day--past');
@@ -729,25 +658,33 @@ function renderCalendar() {
  * @param {string} serviceId
  * @param {string} dateKey — формат 'YYYY-MM-DD'
  */
-function renderTimeSlots(serviceId, dateKey) {
-  const key = `${serviceId}_${dateKey}`;
-  const times = SCHEDULE[key] || [];
-
+async function renderTimeSlots(serviceId, dateKey) {
   const section = document.getElementById('time-section');
   const container = document.getElementById('time-slots');
   const emptyState = document.getElementById('no-slots');
 
-  if (times.length === 0) {
+  // Загружаем слоты с API
+  container.innerHTML = '<div style="padding:12px;text-align:center;opacity:0.5">Загрузка...</div>';
+  section.classList.remove('time-section--hidden');
+  emptyState.classList.add('empty-state--hidden');
+
+  try {
+    daySlots = await api(`/services/${serviceId}/slots?date=${dateKey}`);
+  } catch (e) {
+    daySlots = [];
+    console.error('Не удалось загрузить слоты:', e);
+  }
+
+  if (daySlots.length === 0) {
     section.classList.add('time-section--hidden');
     emptyState.classList.remove('empty-state--hidden');
     return;
   }
 
-  emptyState.classList.add('empty-state--hidden');
-  section.classList.remove('time-section--hidden');
   container.innerHTML = '';
 
-  times.forEach(time => {
+  daySlots.forEach(slot => {
+    const time = slot.start_time.slice(0, 5); // "10:00:00" → "10:00"
     const chip = document.createElement('button');
     chip.className = 'time-chip';
     chip.textContent = time;
@@ -758,8 +695,8 @@ function renderTimeSlots(serviceId, dateKey) {
 
     chip.addEventListener('click', () => {
       state.selectedTime = time;
+      state.selectedSlotId = slot.slot_id || slot.id;
 
-      // Обновляем выделение
       container.querySelectorAll('.time-chip--selected').forEach(el => {
         el.classList.remove('time-chip--selected');
       });
@@ -788,7 +725,6 @@ function hideTimeSlots() {
  */
 function renderConfirmScreen() {
   const service = state.selectedService;
-  const coach = COACHES.find(c => c.id === service.coachId);
   const date = state.selectedDate;
   const time = state.selectedTime;
 
@@ -797,11 +733,11 @@ function renderConfirmScreen() {
   document.getElementById('summary-date').textContent = formatDateFull(date);
   document.getElementById('summary-time').textContent = formatTimeRange(time, service.duration);
 
-  // Строка тренера — скрываем если тренера нет (аренда корта)
+  // Строка тренера
   const summaryCoachRow = document.getElementById('summary-coach').closest('.summary-card__row');
-  if (coach) {
+  if (master && master.name) {
     summaryCoachRow.style.display = '';
-    document.getElementById('summary-coach').textContent = coach.name;
+    document.getElementById('summary-coach').textContent = master.name;
   } else {
     summaryCoachRow.style.display = 'none';
   }
@@ -825,7 +761,7 @@ function renderConfirmScreen() {
 /**
  * Отправка заявки (имитация)
  */
-function submitBooking() {
+async function submitBooking() {
   const phoneInput = document.getElementById('confirm-phone');
   const phone = phoneInput.value.trim();
 
@@ -850,29 +786,48 @@ function submitBooking() {
     tg.MainButton.disable();
   }
 
-  // Имитация отправки на сервер (300ms)
-  setTimeout(() => {
+  try {
+    const result = await api('/bookings', {
+      method: 'POST',
+      body: JSON.stringify({
+        service_id: state.selectedService.id,
+        slot_id: state.selectedSlotId,
+        phone: phone,
+        comment: document.getElementById('confirm-comment').value.trim(),
+      }),
+    });
+
+    state.bookingNumber = result.booking_number || state.bookingNumber + 1;
+
     if (tg) {
       tg.MainButton.hideProgress();
       tg.MainButton.enable();
     }
 
-    // Увеличиваем номер записи
-    state.bookingNumber++;
-
-    // Заполняем экран успеха
     renderSuccessScreen();
-
-    // Переход на экран успеха
     navigateTo('success');
-
-    // Haptic feedback — успех!
     haptic('notification', 'success');
 
-    // Отправляем данные боту (если запущено в Telegram)
-    sendDataToBot();
+    // Сохраняем в localStorage как резерв
+    saveBookingToStorage({
+      bookingNumber: state.bookingNumber,
+      service: state.selectedService.title,
+      date: formatDateKey(state.selectedDate),
+      time: state.selectedTime,
+      duration: state.selectedService.duration,
+      coach: master?.name || '',
+      price: state.selectedService.price,
+    });
 
-  }, 300);
+  } catch (e) {
+    if (tg) {
+      tg.MainButton.hideProgress();
+      tg.MainButton.enable();
+      tg.showAlert(e.message || 'Ошибка при записи');
+    } else {
+      alert(e.message || 'Ошибка при записи');
+    }
+  }
 }
 
 /* --- Экран 5: Успех --- */
@@ -882,57 +837,21 @@ function submitBooking() {
  */
 function renderSuccessScreen() {
   const service = state.selectedService;
-  const coach = COACHES.find(c => c.id === service.coachId);
 
   document.getElementById('success-title').textContent = service.title;
   document.getElementById('success-date').textContent = formatDateFull(state.selectedDate);
   document.getElementById('success-time').textContent = formatTimeRange(state.selectedTime, service.duration);
 
-  // Строка тренера — скрываем если тренера нет (аренда корта)
+  // Строка тренера
   const successCoachRow = document.getElementById('success-coach').closest('.summary-card__row');
-  if (coach) {
+  if (master && master.name) {
     successCoachRow.style.display = '';
-    document.getElementById('success-coach').textContent = coach.name;
+    document.getElementById('success-coach').textContent = master.name;
   } else {
     successCoachRow.style.display = 'none';
   }
 
   document.getElementById('success-number').textContent = `Запись #${state.bookingNumber}`;
-}
-
-/**
- * Отправить данные записи боту через sendData
- */
-function sendDataToBot() {
-  if (!tg) return;
-
-  const service = state.selectedService;
-  const coach = COACHES.find(c => c.id === service.coachId);
-  const comment = document.getElementById('confirm-comment').value.trim();
-
-  const data = {
-    action: 'booking',
-    bookingNumber: state.bookingNumber,
-    service: service.title,
-    date: formatDateKey(state.selectedDate),
-    time: state.selectedTime,
-    duration: service.duration,
-    price: service.price,
-    coach: coach?.name || '',
-    phone: document.getElementById('confirm-phone').value.trim(),
-    comment: comment,
-    userName: [tgUser.first_name, tgUser.last_name].filter(Boolean).join(' ')
-  };
-
-  // sendData закрывает Mini App, поэтому не вызываем его сразу
-  // Вместо этого данные можно отправить через API бэкенда
-  // tg.sendData(JSON.stringify(data));
-
-  // Для демо — выводим в консоль
-  console.log('Данные записи:', data);
-
-  // Сохраняем запись в localStorage
-  saveBookingToStorage(data);
 }
 
 /* --- Экран: Мои записи --- */
@@ -1177,41 +1096,6 @@ function pluralize(n, one, few, many) {
 }
 
 /**
- * Найти ближайший доступный слот для услуги
- * @param {string} serviceId
- * @returns {string|null} — 'завтра, 10:00' или null
- */
-function findNextSlot(serviceId) {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const months = [
-    'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-    'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-  ];
-
-  for (let dayOffset = 0; dayOffset < 14; dayOffset++) {
-    const date = new Date(today);
-    date.setDate(date.getDate() + dayOffset);
-    const dateKey = formatDateKey(date);
-    const key = `${serviceId}_${dateKey}`;
-    const slots = SCHEDULE[key];
-
-    if (slots && slots.length > 0) {
-      const time = slots[0];
-
-      if (dayOffset === 0) {
-        return `сегодня, ${time}`;
-      } else if (dayOffset === 1) {
-        return `завтра, ${time}`;
-      } else {
-        return `${date.getDate()} ${months[date.getMonth()]}, ${time}`;
-      }
-    }
-  }
-  return null;
-}
-
-/**
  * HapticFeedback — вибрация при действиях
  * @param {string} type — 'impact', 'selection', 'notification'
  * @param {string} style — 'light', 'medium', 'heavy', 'success', 'error', 'warning'
@@ -1366,30 +1250,33 @@ function dismissOffer() {
 /* 10. ЗАПУСК ПРИЛОЖЕНИЯ                          */
 /* ---------------------------------------------- */
 
-function init() {
+async function init() {
   // Показываем скелетоны
   showSkeletons();
 
   // Инициализация обработчиков
   initEventHandlers();
 
-  // Имитация загрузки данных (скелетоны видны 400ms)
-  setTimeout(() => {
-    renderCatalog();
+  // Загружаем данные с API
+  try {
+    await loadMasterData();
+  } catch (e) {
+    console.error('Не удалось загрузить данные:', e);
+  }
 
-    // Сообщаем Telegram, что приложение готово
-    if (tg) {
-      tg.ready();
-    }
+  renderCatalog();
 
-    updateTelegramButtons();
+  // Сообщаем Telegram, что приложение готово
+  if (tg) {
+    tg.ready();
+  }
 
-    // Онбординг → если не показан, после него покажется оффер
-    // Если онбординг уже был — показываем только оффер
-    if (!showOnboardingIfNeeded()) {
-      showOfferIfNeeded();
-    }
-  }, 400);
+  updateTelegramButtons();
+
+  // Онбординг → если не показан, после него покажется оффер
+  if (!showOnboardingIfNeeded()) {
+    showOfferIfNeeded();
+  }
 }
 
 // Запуск
