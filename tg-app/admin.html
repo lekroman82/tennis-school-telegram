@@ -153,6 +153,40 @@
     .legend-dot.empty { border-color: var(--tg-theme-hint-color, #ccc); }
 
     /* --- Bookings tab --- */
+    .bookings-dates {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 12px;
+      margin-bottom: 12px;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .bookings-dates::-webkit-scrollbar { display: none; }
+
+    .bdate-btn {
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 10px;
+      border: 1.5px solid var(--tg-theme-hint-color, #999);
+      background: transparent;
+      color: var(--tg-theme-text-color, #000);
+      font-size: 12px;
+      cursor: pointer;
+      min-width: 50px;
+      transition: all 0.2s;
+    }
+    .bdate-btn.active {
+      border-color: var(--tg-theme-button-color, #2AABEE);
+      background: var(--tg-theme-button-color, #2AABEE);
+      color: var(--tg-theme-button-text-color, #fff);
+    }
+    .bdate-btn .day-name { font-size: 10px; opacity: 0.7; }
+    .bdate-btn .day-num { font-size: 14px; font-weight: 700; }
+
     .bookings-filters {
       display: flex;
       gap: 8px;
@@ -309,6 +343,7 @@
 
   <!-- Tab: Bookings -->
   <div class="tab-content" id="tab-bookings">
+    <div class="bookings-dates" id="bookings-dates"></div>
     <div class="bookings-filters" id="bookings-filters">
       <button class="filter-btn active" data-status="">Все</button>
       <button class="filter-btn" data-status="confirmed">Активные</button>
@@ -344,6 +379,7 @@ let selectedDate = null;
 let existingSlots = [];
 let allBookings = [];
 let bookingsFilter = '';
+let bookingsDateFilter = ''; // '' = all days
 
 // --- API helper ---
 async function api(method, path, body) {
@@ -515,6 +551,47 @@ async function toggleSlot(btn, service, startTime, endTime, existingSlot) {
 }
 
 // ========== BOOKINGS TAB ==========
+
+// Date filter for bookings
+function renderBookingsDates() {
+  const container = document.getElementById('bookings-dates');
+  if (container.children.length > 0) return; // already rendered
+
+  // "All days" button
+  const allBtn = document.createElement('button');
+  allBtn.className = 'bdate-btn active';
+  allBtn.innerHTML = `<span class="day-name">Все</span><span class="day-num">дни</span>`;
+  allBtn.addEventListener('click', () => {
+    document.querySelectorAll('.bdate-btn').forEach(b => b.classList.remove('active'));
+    allBtn.classList.add('active');
+    bookingsDateFilter = '';
+    renderBookings();
+  });
+  container.appendChild(allBtn);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  for (let i = 0; i < 14; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    const btn = document.createElement('button');
+    btn.className = 'bdate-btn';
+    btn.innerHTML = `
+      <span class="day-name">${i === 0 ? 'Сегодня' : DAY_NAMES[d.getDay()]}</span>
+      <span class="day-num">${d.getDate()}</span>
+      <span class="day-name">${MONTH_NAMES[d.getMonth()]}</span>
+    `;
+    const dateStr = fmtDate(d);
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.bdate-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      bookingsDateFilter = dateStr;
+      renderBookings();
+    });
+    container.appendChild(btn);
+  }
+}
+
 document.querySelectorAll('.filter-btn').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -525,6 +602,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 });
 
 async function loadBookings() {
+  renderBookingsDates();
   document.getElementById('bookings-list').innerHTML = '<div class="loading">Загрузка...</div>';
   try {
     allBookings = await api('GET', '/api/admin/bookings');
@@ -539,6 +617,12 @@ async function loadBookings() {
 function renderBookings() {
   const container = document.getElementById('bookings-list');
   let list = allBookings;
+  if (bookingsDateFilter) {
+    list = list.filter(b => {
+      const slot = b.schedule_slots || {};
+      return slot.date === bookingsDateFilter;
+    });
+  }
   if (bookingsFilter) {
     list = list.filter(b => b.status === bookingsFilter);
   }
