@@ -113,6 +113,26 @@ async def handle_webhook(master_id: str, request: Request):
             },
         })
 
+    elif text == "/admin":
+        # Только для мастера (владельца бота)
+        if chat_id == master["telegram_id"]:
+            admin_url = "https://tennis-school-telegram.vercel.app/admin.html"
+            telegram_api(bot_token, "sendMessage", {
+                "chat_id": chat_id,
+                "text": "Откройте панель управления расписанием:",
+                "reply_markup": {
+                    "inline_keyboard": [[{
+                        "text": "Управление расписанием",
+                        "web_app": {"url": admin_url},
+                    }]]
+                },
+            })
+        else:
+            telegram_api(bot_token, "sendMessage", {
+                "chat_id": chat_id,
+                "text": "Эта команда доступна только мастеру.",
+            })
+
     elif text == "/help":
         telegram_api(bot_token, "sendMessage", {
             "chat_id": chat_id,
@@ -124,7 +144,8 @@ async def handle_webhook(master_id: str, request: Request):
                 "4. Подтвердите запись\n\n"
                 "/start - открыть каталог\n"
                 "/help - эта справка\n"
-                "/contact - контакты"
+                "/contact - контакты\n"
+                "/admin - управление расписанием (для мастера)"
             ),
             "parse_mode": "HTML",
         })
