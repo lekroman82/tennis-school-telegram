@@ -6,7 +6,8 @@ WORKDIR /app
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Копируем код приложения
+# Копируем логгер и код приложения
+COPY logger.py .
 COPY backend/app ./app
 
 # Запускаем FastAPI через uvicorn

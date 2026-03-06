@@ -7,10 +7,17 @@
 - /api/admin/... → admin.py (для мастеров)
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from logger import get_logger
 from app.routers import client, admin, webhook
+
+log = get_logger('backend')
 
 app = FastAPI(
     title="Tennis SaaS API",

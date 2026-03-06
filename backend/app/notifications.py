@@ -5,9 +5,16 @@
 Когда мастер отменяет запись — клиент получает сообщение.
 """
 
+import sys
+import os
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+
 import httpx
 
+from logger import get_logger
 from app.database import db
+
+log = get_logger('notifications')
 
 
 def send_telegram_message(bot_token: str, chat_id: int, text: str):
@@ -22,8 +29,8 @@ def send_telegram_message(bot_token: str, chat_id: int, text: str):
                     "parse_mode": "HTML",
                 },
             )
-    except Exception:
-        pass  # Не ломаем основной flow если уведомление не ушло
+    except Exception as e:
+        log.error('Не удалось отправить Telegram-сообщение chat_id=%s: %s', chat_id, e)
 
 
 def notify_master_new_booking(master: dict, user: dict, service: dict, slot: dict, phone: str, booking_number: int):
