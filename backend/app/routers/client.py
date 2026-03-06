@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 
 from app.auth import get_current_user
 from app.database import db
+from app.notifications import notify_master_new_booking, notify_client_booking_confirmed
 
 router = APIRouter(prefix="/api/masters/{slug}", tags=["client"])
 
@@ -203,6 +204,21 @@ async def create_booking(
         }, on_conflict="telegram_user_id,master_id")
     except Exception:
         pass
+
+    # Уведомления мастеру и клиенту
+    try:
+        service = db.select_one("services", id=f"eq.{service_id}")
+        slot = db.select_one("schedule_slots", id=f"eq.{slot_id}")
+        booking_number = booking.get("booking_number", 0)
+
+        notify_master_new_booking(
+            master, user, service, slot, phone, booking_number,
+        )
+        notify_client_booking_confirmed(
+            master, user["telegram_user_id"], service, slot, booking_number,
+        )
+    except Exception:
+        pass  # Не ломаем запись если уведомление не ушло
 
     return {
         "booking_id": booking["booking_id"],
