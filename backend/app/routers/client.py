@@ -17,7 +17,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from logger import get_logger
 from app.auth import get_current_user
 from app.database import db
-from app.notifications import notify_master_new_booking, notify_client_booking_confirmed
+from app.notifications import notify_master_new_booking, notify_client_booking_confirmed, notify_master_booking_cancelled
 
 log = get_logger('client_api')
 
@@ -275,4 +275,14 @@ async def cancel_booking(
         raise HTTPException(404, "Запись не найдена")
 
     db.update("bookings", {"status": "cancelled"}, id=f"eq.{booking_id}")
+
+    # Уведомляем мастера об отмене
+    try:
+        service = db.select_one("services", id=f"eq.{existing['service_id']}")
+        slot = db.select_one("schedule_slots", id=f"eq.{existing['slot_id']}")
+        booking_number = existing.get("id", "")[:8]
+        notify_master_booking_cancelled(master, user, service, slot, booking_number)
+    except Exception as e:
+        log.error('Не удалось отправить уведомление об отмене: %s', e)
+
     return {"success": True}

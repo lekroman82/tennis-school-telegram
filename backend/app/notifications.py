@@ -98,3 +98,36 @@ def notify_client_booking_confirmed(master: dict, client_tg_id: int, service: di
     text += "\nДля отмены используйте раздел «Мои записи» в приложении."
 
     send_telegram_message(bot_token, client_tg_id, text)
+
+
+def notify_master_booking_cancelled(master: dict, user: dict, service: dict, slot: dict, booking_number: int):
+    """Уведомляет мастера об отмене записи клиентом."""
+    bot_token = master.get("bot_token")
+    if not bot_token:
+        return
+
+    master_tg_id = master.get("telegram_id")
+    if not master_tg_id:
+        return
+
+    first_name = user.get("first_name", "")
+    last_name = user.get("last_name", "")
+    client_name = f"{first_name} {last_name}".strip() or "Клиент"
+
+    service_title = service.get("title", "Услуга") if service else "Услуга"
+
+    slot_date = slot.get("date", "") if slot else ""
+    start_time = slot.get("start_time", "") if slot else ""
+
+    if start_time and len(start_time) > 5:
+        start_time = start_time[:5]
+
+    text = (
+        f"<b>Запись отменена #{booking_number}</b>\n\n"
+        f"Клиент: {client_name}\n"
+        f"Услуга: {service_title}\n"
+        f"Дата: {slot_date}\n"
+        f"Время: {start_time}"
+    )
+
+    send_telegram_message(bot_token, master_tg_id, text)
